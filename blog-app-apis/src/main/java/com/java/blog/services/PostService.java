@@ -3,6 +3,7 @@ package com.java.blog.services;
 import java.util.List;
 
 import com.java.blog.payloads.PostDto;
+import com.java.blog.payloads.PostResponse;
 
 public interface PostService {
     PostDto createPost(PostDto postDto, Integer postCategoryId, Integer postUserId);
@@ -11,7 +12,7 @@ public interface PostService {
 
     PostDto updatePost(PostDto postDto, Integer postId);
 
-    List<PostDto> getAllPost(Integer pageNumber, Integer pageSize);
+    PostResponse getAllPost(Integer pageNumber, Integer pageSize, String sortBy);
 
     PostDto getPostById(Integer postId);
 
@@ -20,4 +21,6 @@ public interface PostService {
     List<PostDto> getAllPostsByUser(Integer userId);
 
     List<PostDto> searchPosts(String keyword);
+
+    List<PostDto> searchPostByContent(String keyword);
 }

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import com.java.blog.entities.Category;
 import com.java.blog.entities.User;
 import com.java.blog.exception.ResourceNotFoundException;
 import com.java.blog.payloads.PostDto;
+import com.java.blog.payloads.PostResponse;
 import com.java.blog.repositories.CategoryRepo;
 import com.java.blog.repositories.PostRepo;
 import com.java.blog.repositories.UserRepo;
@@ -74,20 +76,29 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getAllPost(Integer pageNumber, Integer pageSize) {
+    public PostResponse getAllPost(Integer pageNumber, Integer pageSize, String sortBy) {
 
         // pagination code
 
         // int pageSize = 10;
         // int pageNumber = 0;
-        Pageable p = PageRequest.of(pageNumber, pageSize);
+        Pageable p = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
 
         Page<Post> pagePost = postRepo.findAll(p);
         List<Post> allPosts = pagePost.getContent();
 
         List<PostDto> postDtoList = allPosts.stream().map(post -> modelMapper.map(post, PostDto.class))
                 .collect(Collectors.toList());
-        return postDtoList;
+
+        PostResponse postResponse = new PostResponse();
+        postResponse.setContent(postDtoList);
+        postResponse.setPageNumber(pagePost.getNumber());
+        postResponse.setPageSize(pagePost.getSize());
+        postResponse.setTotalElement(pagePost.getTotalElements());
+        postResponse.setTotalPages(pagePost.getTotalPages());
+        postResponse.setLastPage(pagePost.isLast());
+
+        return postResponse;
 
         // getCode without pagination
         
@@ -126,8 +137,18 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDto> searchPosts(String keyword) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'searchPosts'");
+        List<Post> postList = postRepo.findByPostTitleContaining(keyword);
+        List<PostDto> postDtoList = postList.stream().map((post) -> modelMapper.map(post, PostDto.class))
+                .collect(Collectors.toList());
+        return postDtoList;
+    }
+
+    @Override
+    public List<PostDto> searchPostByContent(String keyword) {
+        List<Post> postList = postRepo.findByContent(keyword);
+        List<PostDto> postDtoList = postList.stream().map((post) -> modelMapper.map(post, PostDto.class))
+                .collect(Collectors.toList());
+        return postDtoList;
     }
     
 }
